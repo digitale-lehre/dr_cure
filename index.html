@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0" />
   <title>Dr. Cure</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
@@ -14,6 +14,13 @@
       color: #1a1a1a; 
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial;
       overflow: hidden;
+      /* Prevent text selection and touch callouts */
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-touch-callout: none;
     }
     
     .wrap { 
@@ -73,6 +80,8 @@
       z-index: 1000;
       color: white;
       text-align: center;
+      cursor: pointer;
+      touch-action: manipulation;
     }
     
     .start-screen h1 {
@@ -85,6 +94,7 @@
         0 0 40px rgba(0, 255, 128, 0.6),
         4px 4px 8px rgba(0, 0, 0, 0.8);
       animation: titlePulse 2s ease-in-out infinite;
+      pointer-events: none;
     }
     
     .start-screen p {
@@ -95,6 +105,7 @@
         0 0 15px rgba(255, 255, 255, 0.6),
         2px 2px 4px rgba(0, 0, 0, 0.8);
       animation: pressEnterBlink 1.5s ease-in-out infinite;
+      pointer-events: none;
     }
     
     @keyframes titlePulse {
@@ -244,6 +255,7 @@
         inset 0 0 20px rgba(0, 150, 75, 0.1);
       position: relative;
       z-index: 10;
+      touch-action: none;
     }
     
     .controls-info {
@@ -304,13 +316,117 @@
     }
     
     .hidden { display: none; }
+    
+    /* Mobile Touch Controls */
+    .touch-zone {
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      width: 25%;
+      z-index: 100;
+      pointer-events: auto;
+      touch-action: none;
+    }
+    
+    .touch-zone-left {
+      left: 0;
+    }
+    
+    .touch-zone-right {
+      right: 0;
+    }
+    
+    .touch-zone.active::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 100%;
+      background: linear-gradient(
+        90deg,
+        rgba(0, 200, 100, 0.15),
+        transparent
+      );
+      animation: touchPulse 0.3s ease-out;
+    }
+    
+    .touch-zone-right.active::before {
+      background: linear-gradient(
+        -90deg,
+        rgba(0, 200, 100, 0.15),
+        transparent
+      );
+    }
+    
+    @keyframes touchPulse {
+      0% { opacity: 0; }
+      50% { opacity: 1; }
+      100% { opacity: 0.6; }
+    }
+    
+    /* Mobile Touch Indicators */
+    .touch-indicator {
+      position: fixed;
+      bottom: 100px;
+      font-family: 'Orbitron', monospace;
+      font-size: 2rem;
+      color: rgba(0, 200, 100, 0.3);
+      pointer-events: none;
+      z-index: 101;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    
+    .touch-indicator.visible {
+      opacity: 1;
+    }
+    
+    .touch-indicator-left {
+      left: 5%;
+    }
+    
+    .touch-indicator-right {
+      right: 5%;
+    }
+    
+    /* Mobile optimizations */
+    @media (max-width: 768px) and (orientation: portrait) {
+      .game-hud {
+        font-size: 1rem;
+        gap: 1rem;
+        padding: 0.5rem;
+      }
+      
+      .game-title {
+        font-size: 1.5rem;
+      }
+      
+      .score-display,
+      .lives-display {
+        font-size: 0.9rem;
+        padding: 0.3rem 0.6rem;
+      }
+      
+      .controls-info {
+        font-size: 0.75rem;
+        padding: 0.5rem;
+      }
+      
+      .start-screen h1 {
+        font-size: 3rem;
+      }
+      
+      .start-screen p {
+        font-size: 1.2rem;
+      }
+    }
   </style>
 </head>
 <body>
   <!-- Start Screen -->
   <div id="startScreen" class="start-screen">
     <h1>DR. CURE</h1>
-    <p>Press Enter to Start</p>
+    <p id="startPrompt">Press Enter to Start</p>
   </div>
 
   <div class="wrap hidden" id="gameWrap">
@@ -334,11 +450,182 @@
       © wanoptikum
     </footer>
   </div>
+  
+  <!-- Mobile Touch Zones -->
+  <div id="touchZoneLeft" class="touch-zone touch-zone-left hidden"></div>
+  <div id="touchZoneRight" class="touch-zone touch-zone-right hidden"></div>
+  
+  <!-- Touch Indicators -->
+  <div id="touchIndicatorLeft" class="touch-indicator touch-indicator-left">◄</div>
+  <div id="touchIndicatorRight" class="touch-indicator touch-indicator-right">►</div>
 
 <script>
 (function(){
   // Game State
   let gameStarted = false;
+  
+  // Touch Support Detection and Management
+  const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+  
+  // InputManager for unified input handling
+  class InputManager {
+    constructor() {
+      this.touches = new Map(); // Track active touches
+      this.virtualKeys = new Set(); // Virtual key states
+      this.init();
+    }
+    
+    init() {
+      // Update start screen text based on device
+      const startPrompt = document.getElementById('startPrompt');
+      if (isTouchDevice && startPrompt) {
+        startPrompt.textContent = 'Touch to Start';
+      }
+      
+      // Setup start screen touch handler
+      const startScreen = document.getElementById('startScreen');
+      if (startScreen) {
+        startScreen.addEventListener('pointerdown', (e) => {
+          e.preventDefault();
+          if (!gameStarted) {
+            startGame();
+          }
+        }, { passive: false });
+      }
+      
+      // Setup touch zones for game controls
+      this.setupTouchZones();
+    }
+    
+    setupTouchZones() {
+      const leftZone = document.getElementById('touchZoneLeft');
+      const rightZone = document.getElementById('touchZoneRight');
+      const leftIndicator = document.getElementById('touchIndicatorLeft');
+      const rightIndicator = document.getElementById('touchIndicatorRight');
+      
+      if (!leftZone || !rightZone) return;
+      
+      // Helper to simulate key press
+      const simulateKey = (code, pressed) => {
+        if (pressed) {
+          keys.add(code);
+          this.virtualKeys.add(code);
+        } else {
+          keys.delete(code);
+          this.virtualKeys.delete(code);
+        }
+      };
+      
+      // Left zone handlers
+      leftZone.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        this.touches.set(e.pointerId, 'left');
+        simulateKey('ArrowLeft', true);
+        leftZone.classList.add('active');
+        if (leftIndicator) leftIndicator.classList.add('visible');
+      }, { passive: false });
+      
+      leftZone.addEventListener('pointerup', (e) => {
+        e.preventDefault();
+        if (this.touches.get(e.pointerId) === 'left') {
+          this.touches.delete(e.pointerId);
+          simulateKey('ArrowLeft', false);
+          leftZone.classList.remove('active');
+          if (leftIndicator) leftIndicator.classList.remove('visible');
+        }
+      }, { passive: false });
+      
+      leftZone.addEventListener('pointercancel', (e) => {
+        if (this.touches.get(e.pointerId) === 'left') {
+          this.touches.delete(e.pointerId);
+          simulateKey('ArrowLeft', false);
+          leftZone.classList.remove('active');
+          if (leftIndicator) leftIndicator.classList.remove('visible');
+        }
+      });
+      
+      leftZone.addEventListener('pointerleave', (e) => {
+        if (this.touches.get(e.pointerId) === 'left') {
+          this.touches.delete(e.pointerId);
+          simulateKey('ArrowLeft', false);
+          leftZone.classList.remove('active');
+          if (leftIndicator) leftIndicator.classList.remove('visible');
+        }
+      });
+      
+      // Right zone handlers
+      rightZone.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        this.touches.set(e.pointerId, 'right');
+        simulateKey('ArrowRight', true);
+        rightZone.classList.add('active');
+        if (rightIndicator) rightIndicator.classList.add('visible');
+      }, { passive: false });
+      
+      rightZone.addEventListener('pointerup', (e) => {
+        e.preventDefault();
+        if (this.touches.get(e.pointerId) === 'right') {
+          this.touches.delete(e.pointerId);
+          simulateKey('ArrowRight', false);
+          rightZone.classList.remove('active');
+          if (rightIndicator) rightIndicator.classList.remove('visible');
+        }
+      }, { passive: false });
+      
+      rightZone.addEventListener('pointercancel', (e) => {
+        if (this.touches.get(e.pointerId) === 'right') {
+          this.touches.delete(e.pointerId);
+          simulateKey('ArrowRight', false);
+          rightZone.classList.remove('active');
+          if (rightIndicator) rightIndicator.classList.remove('visible');
+        }
+      });
+      
+      rightZone.addEventListener('pointerleave', (e) => {
+        if (this.touches.get(e.pointerId) === 'right') {
+          this.touches.delete(e.pointerId);
+          simulateKey('ArrowRight', false);
+          rightZone.classList.remove('active');
+          if (rightIndicator) rightIndicator.classList.remove('visible');
+        }
+      });
+    }
+    
+    showTouchZones() {
+      const leftZone = document.getElementById('touchZoneLeft');
+      const rightZone = document.getElementById('touchZoneRight');
+      if (leftZone) leftZone.classList.remove('hidden');
+      if (rightZone) rightZone.classList.remove('hidden');
+    }
+    
+    hideTouchZones() {
+      const leftZone = document.getElementById('touchZoneLeft');
+      const rightZone = document.getElementById('touchZoneRight');
+      if (leftZone) leftZone.classList.add('hidden');
+      if (rightZone) rightZone.classList.add('hidden');
+    }
+    
+    cleanup() {
+      // Clear all virtual keys when game ends
+      this.virtualKeys.forEach(code => keys.delete(code));
+      this.virtualKeys.clear();
+      this.touches.clear();
+      
+      // Remove active states
+      const leftZone = document.getElementById('touchZoneLeft');
+      const rightZone = document.getElementById('touchZoneRight');
+      const leftIndicator = document.getElementById('touchIndicatorLeft');
+      const rightIndicator = document.getElementById('touchIndicatorRight');
+      
+      if (leftZone) leftZone.classList.remove('active');
+      if (rightZone) rightZone.classList.remove('active');
+      if (leftIndicator) leftIndicator.classList.remove('visible');
+      if (rightIndicator) rightIndicator.classList.remove('visible');
+    }
+  }
+  
+  // Initialize InputManager
+  const inputManager = new InputManager();
   
   function startGame() {
     if (gameStarted) return;
@@ -346,6 +633,11 @@
     
     document.getElementById('startScreen').classList.add('hidden');
     document.getElementById('gameWrap').classList.remove('hidden');
+    
+    // Show touch zones if on touch device
+    if (isTouchDevice) {
+      inputManager.showTouchZones();
+    }
     
     setTimeout(() => {
       initializeGame();
@@ -1044,6 +1336,7 @@
     running = false; 
     paused = false;
     stopBackgroundMusic();
+    inputManager.cleanup();
     debugLog('Game Over - Ranking displayed');
   }
 
@@ -1074,6 +1367,8 @@
     
     player.x = VIRTUAL_W/2-16; 
     player.y = groundY(); 
+    
+    inputManager.cleanup();
     
     setTimeout(() => spawnMegaBoss(), 100);
     
@@ -1383,6 +1678,12 @@
   let last = performance.now();
   
   function loop(now) { 
+    // Wait for canvas and context to be initialized
+    if (!canvas || !ctx) {
+      requestAnimationFrame(loop);
+      return;
+    }
+    
     if (!gameStarted) {
       requestAnimationFrame(loop);
       return;
@@ -1422,8 +1723,18 @@
     window.addEventListener('resize', fitToWindow);
     fitToWindow();
     
+    // Initialize audio on first touch for mobile
+    if (isTouchDevice && !audioEnabled) {
+      document.addEventListener('pointerdown', function audioInit() {
+        if (!audioEnabled) {
+          initAudio();
+          document.removeEventListener('pointerdown', audioInit);
+        }
+      }, { once: true });
+    }
+    
     debugLog(`Game initialized - Auto-shooting enabled`);
-    debugLog('Start screen active - Press Enter to start');
+    debugLog(`Touch support: ${isTouchDevice ? 'enabled' : 'keyboard only'}`);
   }
 
   // Start the game loop immediately, but game logic waits for gameStarted
@@ -1431,9 +1742,9 @@
   
   // Initialize game components when page loads
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initializeGame);
-  } else {
-    initializeGame();
+    document.addEventListener('DOMContentLoaded', () => {
+      // InputManager initialization is already done in its constructor
+    });
   }
 })();
 </script>
