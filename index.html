@@ -437,7 +437,7 @@
     </div>
     <div class="debug" id="debug" style="display: none;">Debug-Informationen werden hier angezeigt...</div>
     <div class="canvas-wrap">
-      <canvas id="game" width="378" height="672"></canvas>
+      <canvas id="game" width="346" height="672"></canvas>
     </div>
     <div class="controls-info">
       <span class="control-key">◄ ►</span> Move
@@ -622,7 +622,24 @@
       if (leftIndicator) leftIndicator.classList.remove('visible');
       if (rightIndicator) rightIndicator.classList.remove('visible');
     }
+	setupGameOverTouch() {
+      if (!isTouchDevice) return;
+      
+      const canvas = document.getElementById('game');
+      if (!canvas) return;
+      
+      const reloadHandler = (e) => {
+        if (!running && gameStarted) {
+          e.preventDefault();
+          location.reload();
+        }
+      };
+      
+      canvas.addEventListener('pointerdown', reloadHandler);
+      this.gameOverHandler = reloadHandler;
+    }
   }
+
   
   // Initialize InputManager
   const inputManager = new InputManager();
@@ -1337,6 +1354,7 @@
     paused = false;
     stopBackgroundMusic();
     inputManager.cleanup();
+	inputManager.setupGameOverTouch();
     debugLog('Game Over - Ranking displayed');
   }
 
