@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0" />
+  <meta name="viewport" content="width=device-width-32, initial-scale=0.9, user-scalable=no, maximum-scale=0.9" />
   <title>Dr. Cure</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
@@ -390,7 +390,7 @@
     }
     
     /* Mobile optimizations */
-    @media (max-width: 720px) and (orientation: portrait) {
+    @media (max-width: 768px) and (orientation: portrait) {
       .game-hud {
         font-size: 1rem;
         gap: 1rem;
@@ -433,11 +433,11 @@
     <div class="game-hud">
       <div class="game-title">DR. CURE</div>
       <div class="score-display">Score: <span id="score">0</span></div>
-      <div class="lives-display">Lives: <span id="lives">3</span></div>
+      <div class="lives-display">Lives: <span id="lives">5</span></div>
     </div>
     <div class="debug" id="debug" style="display: none;">Debug-Informationen werden hier angezeigt...</div>
     <div class="canvas-wrap">
-      <canvas id="game" width="346" height="640"></canvas>
+      <canvas id="game" width="346" height="672"></canvas>
     </div>
     <div class="controls-info">
       <span class="control-key">◄ ►</span> Move
@@ -872,7 +872,7 @@
   let canvas, ctx, $score, $lives;
   let player = null;
   const bullets = [], viruses = [], powerups = [];
-  let score = 0, lives = 3, running = true;
+  let score = 0, lives = 5, running = true;
   let animT = 0;
   let safeTime = 0;
   let paused = false;
