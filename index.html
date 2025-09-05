@@ -433,7 +433,7 @@
     <div class="game-hud">
       <div class="game-title">DR. CURE</div>
       <div class="score-display">Score: <span id="score">0</span></div>
-      <div class="lives-display">Lives: <span id="lives">3</span></div>
+      <div class="lives-display">Lives: <span id="lives">5</span></div>
     </div>
     <div class="debug" id="debug" style="display: none;">Debug-Informationen werden hier angezeigt...</div>
     <div class="canvas-wrap">
@@ -872,7 +872,7 @@
   let canvas, ctx, $score, $lives;
   let player = null;
   const bullets = [], viruses = [], powerups = [];
-  let score = 0, lives = 3, running = true;
+  let score = 0, lives = 5, running = true;
   let animT = 0;
   let safeTime = 0;
   let paused = false;
