@@ -1,0 +1,1752 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0" />
+  <title>Dr. Cure</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+    
+    html, body { 
+      height: 100%; 
+      margin: 0; 
+      background: #f8fffe; 
+      color: #1a1a1a; 
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial;
+      overflow: hidden;
+      /* Prevent text selection and touch callouts */
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-touch-callout: none;
+    }
+    
+    .wrap { 
+      height: 100%; 
+      display: grid; 
+      grid-template-rows: auto 1fr auto auto;
+      position: relative;
+    }
+    
+    /* Medical Laboratory Background */
+    .wrap::before {
+      content: '';
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: 
+        radial-gradient(circle at 20% 20%, rgba(0, 255, 128, 0.08) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 50% 50%, rgba(64, 224, 208, 0.06) 0%, transparent 70%),
+        linear-gradient(45deg, #f8fffe 0%, #e8f8f5 50%, #f0fffc 100%);
+      z-index: -2;
+    }
+    
+    /* Clean Room Decontamination Grid */
+    .wrap::after {
+      content: '';
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-image: 
+        linear-gradient(rgba(0, 200, 100, 0.15) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 200, 100, 0.15) 1px, transparent 1px),
+        radial-gradient(circle 3px at 25px 25px, rgba(255, 204, 0, 0.6) 2px, transparent 3px);
+      background-size: 50px 50px, 50px 50px, 50px 50px;
+      animation: decontaminationScan 20s linear infinite;
+      z-index: -1;
+      opacity: 0.4;
+    }
+    
+    @keyframes decontaminationScan {
+      0% { transform: translate(0, 0); }
+      100% { transform: translate(50px, 50px); }
+    }
+    
+    /* Start Screen */
+    .start-screen {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: 
+        linear-gradient(135deg, rgba(0, 200, 100, 0.95), rgba(0, 150, 75, 0.98)),
+        url('dr_cure_start.jpg');
+      background-size: cover;
+      background-position: center;
+      background-blend-mode: overlay;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      color: white;
+      text-align: center;
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+    
+    .start-screen h1 {
+      font-family: 'Orbitron', monospace;
+      font-weight: 900;
+      font-size: 4rem;
+      margin-bottom: 2rem;
+      text-shadow: 
+        0 0 20px rgba(255, 255, 255, 0.8),
+        0 0 40px rgba(0, 255, 128, 0.6),
+        4px 4px 8px rgba(0, 0, 0, 0.8);
+      animation: titlePulse 2s ease-in-out infinite;
+      pointer-events: none;
+    }
+    
+    .start-screen p {
+      font-family: 'Orbitron', monospace;
+      font-size: 1.5rem;
+      font-weight: 700;
+      text-shadow: 
+        0 0 15px rgba(255, 255, 255, 0.6),
+        2px 2px 4px rgba(0, 0, 0, 0.8);
+      animation: pressEnterBlink 1.5s ease-in-out infinite;
+      pointer-events: none;
+    }
+    
+    @keyframes titlePulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+    
+    @keyframes pressEnterBlink {
+      0%, 50% { opacity: 1; }
+      75%, 100% { opacity: 0.5; }
+    }
+    
+    .game-hud { 
+      padding: 1rem; 
+      background: linear-gradient(135deg, rgba(240, 255, 240, 0.95), rgba(232, 248, 245, 0.95));
+      backdrop-filter: blur(10px);
+      border-bottom: 3px solid #00c864; 
+      font-family: 'Orbitron', monospace;
+      font-weight: 700;
+      font-size: 1.4rem;
+      text-align: center;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: #006432;
+      text-shadow: 0 0 8px rgba(0, 200, 100, 0.3);
+      position: relative;
+      z-index: 10;
+      box-shadow: 0 2px 10px rgba(0, 200, 100, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 3rem;
+    }
+    
+    .game-title {
+      font-family: 'Orbitron', monospace;
+      font-weight: 900;
+      font-size: 2.2rem;
+      color: #00c864;
+      text-shadow: 
+        0 0 20px rgba(0, 200, 100, 0.6),
+        0 0 40px rgba(0, 200, 100, 0.4),
+        2px 2px 4px rgba(0, 100, 50, 0.8);
+      letter-spacing: 4px;
+      background: linear-gradient(45deg, #00c864, #00ff80, #00c864);
+      background-size: 200% 200%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: titleGlow 3s ease-in-out infinite;
+    }
+    
+    @keyframes titleGlow {
+      0%, 100% { 
+        background-position: 0% 50%;
+        text-shadow: 
+          0 0 20px rgba(0, 200, 100, 0.6),
+          0 0 40px rgba(0, 200, 100, 0.4),
+          2px 2px 4px rgba(0, 100, 50, 0.8);
+      }
+      50% { 
+        background-position: 100% 50%;
+        text-shadow: 
+          0 0 30px rgba(0, 255, 128, 0.8),
+          0 0 60px rgba(0, 255, 128, 0.6),
+          2px 2px 4px rgba(0, 150, 75, 1);
+      }
+    }
+    
+    .score-display {
+      display: inline-block;
+      margin: 0 1rem;
+      padding: 0.5rem 1rem;
+      background: rgba(255, 255, 255, 0.9);
+      border: 2px solid #00c864;
+      border-radius: 8px;
+      box-shadow: 
+        inset 0 0 15px rgba(0, 200, 100, 0.15),
+        0 0 20px rgba(0, 200, 100, 0.25);
+      position: relative;
+      color: #006432;
+      font-size: 1.2rem;
+    }
+    
+    .score-display::before {
+      content: '';
+      position: absolute;
+      top: -2px; left: -2px; right: -2px; bottom: -2px;
+      background: linear-gradient(45deg, #00c864, transparent, #00ff80);
+      border-radius: 8px;
+      z-index: -1;
+      animation: medicalGlow 3s ease-in-out infinite;
+    }
+    
+    @keyframes medicalGlow {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 1; }
+    }
+    
+    .lives-display {
+      display: inline-block;
+      margin: 0 1rem;
+      padding: 0.5rem 1rem;
+      background: rgba(255, 245, 245, 0.95);
+      border: 2px solid #ff6b47;
+      border-radius: 8px;
+      color: #d32f2f;
+      text-shadow: 0 0 8px rgba(255, 107, 71, 0.3);
+      box-shadow: 
+        inset 0 0 15px rgba(255, 107, 71, 0.15),
+        0 0 20px rgba(255, 107, 71, 0.25);
+      position: relative;
+      font-size: 1.2rem;
+    }
+    
+    .lives-display::before {
+      content: '';
+      position: absolute;
+      top: -2px; left: -2px; right: -2px; bottom: -2px;
+      background: linear-gradient(45deg, #ff6b47, transparent, #ff8a65);
+      border-radius: 8px;
+      z-index: -1;
+      animation: criticalGlow 2s ease-in-out infinite;
+    }
+    
+    @keyframes criticalGlow {
+      0%, 100% { opacity: 0.5; }
+      50% { opacity: 0.9; }
+    }
+    
+    .canvas-wrap { 
+      display: grid; 
+      place-items: center; 
+      background: rgba(248, 255, 254, 0.3);
+      padding: 1rem;
+      position: relative;
+      z-index: 5;
+    }
+    
+    canvas { 
+      image-rendering: pixelated; 
+      border: 3px solid #00c864; 
+      border-radius: 8px;
+      background: rgba(240, 255, 240, 0.85);
+      box-shadow: 
+        0 0 25px rgba(0, 200, 100, 0.3),
+        inset 0 0 20px rgba(0, 150, 75, 0.1);
+      position: relative;
+      z-index: 10;
+      touch-action: none;
+    }
+    
+    .controls-info {
+      padding: 1rem;
+      background: linear-gradient(135deg, rgba(232, 248, 245, 0.95), rgba(240, 255, 240, 0.95));
+      backdrop-filter: blur(10px);
+      border-top: 3px solid #00c864;
+      text-align: center;
+      font-family: 'Orbitron', monospace;
+      font-weight: 400;
+      font-size: 0.9rem;
+      color: #2e7d32;
+      letter-spacing: 1px;
+      position: relative;
+      z-index: 10;
+      box-shadow: 0 -2px 10px rgba(0, 200, 100, 0.15);
+    }
+    
+    .control-key {
+      display: inline-block;
+      padding: 0.2rem 0.5rem;
+      margin: 0 0.3rem;
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid #4caf50;
+      border-radius: 4px;
+      color: #1b5e20;
+      font-weight: 700;
+      box-shadow: 0 0 10px rgba(0, 200, 100, 0.2);
+      transition: all 0.3s ease;
+    }
+    
+    .control-key:hover {
+      background: rgba(200, 255, 200, 0.3);
+      box-shadow: 0 0 15px rgba(0, 200, 100, 0.4);
+    }
+    
+    footer { 
+      padding: 0.5rem 1rem; 
+      background: rgba(240, 255, 240, 0.95);
+      backdrop-filter: blur(5px);
+      border-top: 1px solid #a5d6a7; 
+      font-size: 0.8rem; 
+      color: #388e3c;
+      text-align: center;
+      position: relative;
+      z-index: 10;
+    }
+    
+    .debug { 
+      background: rgba(255, 245, 245, 0.95); 
+      backdrop-filter: blur(5px);
+      padding: .5rem 1rem; 
+      color: #d32f2f; 
+      font-family: monospace; 
+      font-size: 0.85rem; 
+      position: relative;
+      z-index: 10;
+    }
+    
+    .hidden { display: none; }
+    
+    /* Mobile Touch Controls */
+    .touch-zone {
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      width: 25%;
+      z-index: 100;
+      pointer-events: auto;
+      touch-action: none;
+    }
+    
+    .touch-zone-left {
+      left: 0;
+    }
+    
+    .touch-zone-right {
+      right: 0;
+    }
+    
+    .touch-zone.active::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 100%;
+      background: linear-gradient(
+        90deg,
+        rgba(0, 200, 100, 0.15),
+        transparent
+      );
+      animation: touchPulse 0.3s ease-out;
+    }
+    
+    .touch-zone-right.active::before {
+      background: linear-gradient(
+        -90deg,
+        rgba(0, 200, 100, 0.15),
+        transparent
+      );
+    }
+    
+    @keyframes touchPulse {
+      0% { opacity: 0; }
+      50% { opacity: 1; }
+      100% { opacity: 0.6; }
+    }
+    
+    /* Mobile Touch Indicators */
+    .touch-indicator {
+      position: fixed;
+      bottom: 100px;
+      font-family: 'Orbitron', monospace;
+      font-size: 2rem;
+      color: rgba(0, 200, 100, 0.3);
+      pointer-events: none;
+      z-index: 101;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    
+    .touch-indicator.visible {
+      opacity: 1;
+    }
+    
+    .touch-indicator-left {
+      left: 5%;
+    }
+    
+    .touch-indicator-right {
+      right: 5%;
+    }
+    
+    /* Mobile optimizations */
+    @media (max-width: 768px) and (orientation: portrait) {
+      .game-hud {
+        font-size: 1rem;
+        gap: 1rem;
+        padding: 0.5rem;
+      }
+      
+      .game-title {
+        font-size: 1.5rem;
+      }
+      
+      .score-display,
+      .lives-display {
+        font-size: 0.9rem;
+        padding: 0.3rem 0.6rem;
+      }
+      
+      .controls-info {
+        font-size: 0.75rem;
+        padding: 0.5rem;
+      }
+      
+      .start-screen h1 {
+        font-size: 3rem;
+      }
+      
+      .start-screen p {
+        font-size: 1.2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Start Screen -->
+  <div id="startScreen" class="start-screen">
+    <h1>DR. CURE</h1>
+    <p id="startPrompt">Press Enter to Start</p>
+  </div>
+
+  <div class="wrap hidden" id="gameWrap">
+    <div class="game-hud">
+      <div class="game-title">DR. CURE</div>
+      <div class="score-display">Score: <span id="score">0</span></div>
+      <div class="lives-display">Lives: <span id="lives">3</span></div>
+    </div>
+    <div class="debug" id="debug" style="display: none;">Debug-Informationen werden hier angezeigt...</div>
+    <div class="canvas-wrap">
+      <canvas id="game" width="378" height="672"></canvas>
+    </div>
+    <div class="controls-info">
+      <span class="control-key">◄ ►</span> Move
+      <span class="control-key">P</span> Pause
+      <span class="control-key">Enter/R</span> Restart
+    </div>
+    <footer>
+      <strong>Developed by Digitale Lehre with AI</strong>
+      <br>
+      © wanoptikum
+    </footer>
+  </div>
+  
+  <!-- Mobile Touch Zones -->
+  <div id="touchZoneLeft" class="touch-zone touch-zone-left hidden"></div>
+  <div id="touchZoneRight" class="touch-zone touch-zone-right hidden"></div>
+  
+  <!-- Touch Indicators -->
+  <div id="touchIndicatorLeft" class="touch-indicator touch-indicator-left">◄</div>
+  <div id="touchIndicatorRight" class="touch-indicator touch-indicator-right">►</div>
+
+<script>
+(function(){
+  // Game State
+  let gameStarted = false;
+  
+  // Touch Support Detection and Management
+  const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+  
+  // InputManager for unified input handling
+  class InputManager {
+    constructor() {
+      this.touches = new Map(); // Track active touches
+      this.virtualKeys = new Set(); // Virtual key states
+      this.init();
+    }
+    
+    init() {
+      // Update start screen text based on device
+      const startPrompt = document.getElementById('startPrompt');
+      if (isTouchDevice && startPrompt) {
+        startPrompt.textContent = 'Touch to Start';
+      }
+      
+      // Setup start screen touch handler
+      const startScreen = document.getElementById('startScreen');
+      if (startScreen) {
+        startScreen.addEventListener('pointerdown', (e) => {
+          e.preventDefault();
+          if (!gameStarted) {
+            startGame();
+          }
+        }, { passive: false });
+      }
+      
+      // Setup touch zones for game controls
+      this.setupTouchZones();
+    }
+    
+    setupTouchZones() {
+      const leftZone = document.getElementById('touchZoneLeft');
+      const rightZone = document.getElementById('touchZoneRight');
+      const leftIndicator = document.getElementById('touchIndicatorLeft');
+      const rightIndicator = document.getElementById('touchIndicatorRight');
+      
+      if (!leftZone || !rightZone) return;
+      
+      // Helper to simulate key press
+      const simulateKey = (code, pressed) => {
+        if (pressed) {
+          keys.add(code);
+          this.virtualKeys.add(code);
+        } else {
+          keys.delete(code);
+          this.virtualKeys.delete(code);
+        }
+      };
+      
+      // Left zone handlers
+      leftZone.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        this.touches.set(e.pointerId, 'left');
+        simulateKey('ArrowLeft', true);
+        leftZone.classList.add('active');
+        if (leftIndicator) leftIndicator.classList.add('visible');
+      }, { passive: false });
+      
+      leftZone.addEventListener('pointerup', (e) => {
+        e.preventDefault();
+        if (this.touches.get(e.pointerId) === 'left') {
+          this.touches.delete(e.pointerId);
+          simulateKey('ArrowLeft', false);
+          leftZone.classList.remove('active');
+          if (leftIndicator) leftIndicator.classList.remove('visible');
+        }
+      }, { passive: false });
+      
+      leftZone.addEventListener('pointercancel', (e) => {
+        if (this.touches.get(e.pointerId) === 'left') {
+          this.touches.delete(e.pointerId);
+          simulateKey('ArrowLeft', false);
+          leftZone.classList.remove('active');
+          if (leftIndicator) leftIndicator.classList.remove('visible');
+        }
+      });
+      
+      leftZone.addEventListener('pointerleave', (e) => {
+        if (this.touches.get(e.pointerId) === 'left') {
+          this.touches.delete(e.pointerId);
+          simulateKey('ArrowLeft', false);
+          leftZone.classList.remove('active');
+          if (leftIndicator) leftIndicator.classList.remove('visible');
+        }
+      });
+      
+      // Right zone handlers
+      rightZone.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        this.touches.set(e.pointerId, 'right');
+        simulateKey('ArrowRight', true);
+        rightZone.classList.add('active');
+        if (rightIndicator) rightIndicator.classList.add('visible');
+      }, { passive: false });
+      
+      rightZone.addEventListener('pointerup', (e) => {
+        e.preventDefault();
+        if (this.touches.get(e.pointerId) === 'right') {
+          this.touches.delete(e.pointerId);
+          simulateKey('ArrowRight', false);
+          rightZone.classList.remove('active');
+          if (rightIndicator) rightIndicator.classList.remove('visible');
+        }
+      }, { passive: false });
+      
+      rightZone.addEventListener('pointercancel', (e) => {
+        if (this.touches.get(e.pointerId) === 'right') {
+          this.touches.delete(e.pointerId);
+          simulateKey('ArrowRight', false);
+          rightZone.classList.remove('active');
+          if (rightIndicator) rightIndicator.classList.remove('visible');
+        }
+      });
+      
+      rightZone.addEventListener('pointerleave', (e) => {
+        if (this.touches.get(e.pointerId) === 'right') {
+          this.touches.delete(e.pointerId);
+          simulateKey('ArrowRight', false);
+          rightZone.classList.remove('active');
+          if (rightIndicator) rightIndicator.classList.remove('visible');
+        }
+      });
+    }
+    
+    showTouchZones() {
+      const leftZone = document.getElementById('touchZoneLeft');
+      const rightZone = document.getElementById('touchZoneRight');
+      if (leftZone) leftZone.classList.remove('hidden');
+      if (rightZone) rightZone.classList.remove('hidden');
+    }
+    
+    hideTouchZones() {
+      const leftZone = document.getElementById('touchZoneLeft');
+      const rightZone = document.getElementById('touchZoneRight');
+      if (leftZone) leftZone.classList.add('hidden');
+      if (rightZone) rightZone.classList.add('hidden');
+    }
+    
+    cleanup() {
+      // Clear all virtual keys when game ends
+      this.virtualKeys.forEach(code => keys.delete(code));
+      this.virtualKeys.clear();
+      this.touches.clear();
+      
+      // Remove active states
+      const leftZone = document.getElementById('touchZoneLeft');
+      const rightZone = document.getElementById('touchZoneRight');
+      const leftIndicator = document.getElementById('touchIndicatorLeft');
+      const rightIndicator = document.getElementById('touchIndicatorRight');
+      
+      if (leftZone) leftZone.classList.remove('active');
+      if (rightZone) rightZone.classList.remove('active');
+      if (leftIndicator) leftIndicator.classList.remove('visible');
+      if (rightIndicator) rightIndicator.classList.remove('visible');
+    }
+  }
+  
+  // Initialize InputManager
+  const inputManager = new InputManager();
+  
+  function startGame() {
+    if (gameStarted) return;
+    gameStarted = true;
+    
+    document.getElementById('startScreen').classList.add('hidden');
+    document.getElementById('gameWrap').classList.remove('hidden');
+    
+    // Show touch zones if on touch device
+    if (isTouchDevice) {
+      inputManager.showTouchZones();
+    }
+    
+    setTimeout(() => {
+      initializeGame();
+    }, 100);
+  }
+
+  // Debug
+  const DEBUG_ENABLED = false;
+  const $debug = document.getElementById('debug');
+  if (DEBUG_ENABLED) $debug.style.display = 'block';
+  function debugLog(msg) {
+    if (!DEBUG_ENABLED) return;
+    console.log(msg);
+    $debug.innerHTML = msg + '<br>' + $debug.innerHTML;
+  }
+
+  // Audio System
+  let audioContext = null;
+  let audioEnabled = false;
+  let backgroundMusic = null;
+  let externalAudio = null;
+
+  function initAudio() {
+    if (!audioContext) {
+      try {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        audioEnabled = true;
+        debugLog('Audio system initialized');
+        startBackgroundMusic();
+      } catch (e) {
+        debugLog('Audio not supported: ' + e.message);
+        audioEnabled = false;
+      }
+    }
+  }
+
+  function startBackgroundMusic() {
+    if (backgroundMusic) return;
+    
+    try {
+      externalAudio = new Audio('Virus_Runner.mp3');
+      externalAudio.loop = true;
+      externalAudio.volume = 0.3;
+      
+      externalAudio.addEventListener('canplaythrough', function() {
+        debugLog('Virus_Runner.mp3 loaded');
+        backgroundMusic = { 
+          playing: true, 
+          external: true,
+          audio: externalAudio 
+        };
+        if (running && !paused) {
+          externalAudio.play().catch(e => debugLog('Autoplay blocked: ' + e.message));
+        }
+      });
+      
+      externalAudio.addEventListener('error', function() {
+        debugLog('Virus_Runner.mp3 not found - using synthetic music');
+        startSyntheticMusic();
+      });
+      
+      externalAudio.load();
+      
+    } catch (e) {
+      debugLog('Error loading external music - using synthetic music');
+      startSyntheticMusic();
+    }
+  }
+
+  function startSyntheticMusic() {
+    if (!audioEnabled || !audioContext) return;
+    
+    try {
+      const melody = [
+        {note: 55, duration: 0.25}, {note: 55, duration: 0.25}, {note: 73, duration: 0.15},
+        {note: 55, duration: 0.15}, {note: 41, duration: 0.4}, {note: 0, duration: 0.05}
+      ];
+      
+      let noteIndex = 0;
+      let lastNoteTime = performance.now();
+      let currentNoteDuration = 0;
+      
+      function playNextNote() {
+        if (!audioEnabled || !audioContext || !backgroundMusic?.playing) return;
+        
+        const now = performance.now();
+        const elapsed = (now - lastNoteTime) / 1000;
+        
+        if (elapsed >= currentNoteDuration && running && !paused) {
+          const note = melody[noteIndex];
+          
+          if (note.note > 0) {
+            const bassOsc = audioContext.createOscillator();
+            const bassGain = audioContext.createGain();
+            bassOsc.connect(bassGain);
+            bassGain.connect(audioContext.destination);
+            bassOsc.frequency.setValueAtTime(note.note, audioContext.currentTime);
+            bassOsc.type = 'square';
+            bassGain.gain.setValueAtTime(0, audioContext.currentTime);
+            bassGain.gain.linearRampToValueAtTime(0.06, audioContext.currentTime + 0.005);
+            bassGain.gain.linearRampToValueAtTime(0, audioContext.currentTime + note.duration);
+            bassOsc.start(audioContext.currentTime);
+            bassOsc.stop(audioContext.currentTime + note.duration);
+          }
+          
+          currentNoteDuration = note.duration;
+          lastNoteTime = now;
+          noteIndex = (noteIndex + 1) % melody.length;
+        }
+        
+        if (backgroundMusic?.playing) {
+          requestAnimationFrame(playNextNote);
+        }
+      }
+      
+      backgroundMusic = { 
+        playing: true, 
+        external: false 
+      };
+      playNextNote();
+      debugLog('Synthetic music started');
+      
+    } catch (e) {
+      debugLog('Error starting synthetic music: ' + e.message);
+    }
+  }
+
+  function pauseBackgroundMusic() {
+    if (backgroundMusic?.external && externalAudio) {
+      externalAudio.pause();
+    }
+  }
+
+  function resumeBackgroundMusic() {
+    if (backgroundMusic?.external && externalAudio) {
+      externalAudio.play().catch(e => debugLog('Resume error: ' + e.message));
+    }
+  }
+
+  function stopBackgroundMusic() {
+    if (backgroundMusic?.external && externalAudio) {
+      externalAudio.pause();
+      externalAudio.currentTime = 0;
+    }
+    if (backgroundMusic) {
+      backgroundMusic.playing = false;
+      backgroundMusic = null;
+    }
+    debugLog('Background music stopped');
+  }
+
+  function playHitSound(virusType) {
+    if (!audioEnabled || !audioContext) return;
+    
+    try {
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      const soundSettings = {
+        'normal': { freq: 800, duration: 0.1, volume: 0.1 },
+        'super': { freq: 600, duration: 0.15, volume: 0.15 },
+        'turbo': { freq: 1200, duration: 0.08, volume: 0.12 },
+        'boss': { freq: 400, duration: 0.25, volume: 0.2 },
+        'crazy': { freq: 1000, duration: 0.12, volume: 0.13 },
+        'mega': { freq: 300, duration: 0.3, volume: 0.25 }
+      };
+      
+      const settings = soundSettings[virusType] || soundSettings.normal;
+      
+      oscillator.frequency.setValueAtTime(settings.freq, audioContext.currentTime);
+      oscillator.frequency.exponentialRampToValueAtTime(settings.freq * 0.3, audioContext.currentTime + settings.duration);
+      
+      gainNode.gain.setValueAtTime(settings.volume, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + settings.duration);
+      
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + settings.duration);
+    } catch (e) {
+      debugLog('Error playing sound: ' + e.message);
+    }
+  }
+
+  function playYeahSound() {
+    if (!audioEnabled || !audioContext) return;
+    
+    try {
+      const frequencies = [523, 659, 784];
+      
+      frequencies.forEach((freq, index) => {
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        oscillator.frequency.setValueAtTime(freq, audioContext.currentTime);
+        const startTime = audioContext.currentTime + (index * 0.05);
+        gainNode.gain.setValueAtTime(0.15, startTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + 0.5);
+        
+        oscillator.start(startTime);
+        oscillator.stop(startTime + 0.5);
+      });
+      
+      debugLog('YEAH! Boss destroyed!');
+    } catch (e) {
+      debugLog('Error playing yeah sound: ' + e.message);
+    }
+  }
+
+  // Game Variables
+  let canvas, ctx, $score, $lives;
+  let player = null;
+  const bullets = [], viruses = [], powerups = [];
+  let score = 0, lives = 3, running = true;
+  let animT = 0;
+  let safeTime = 0;
+  let paused = false;
+  
+  const VIRTUAL_W = 378;
+  const VIRTUAL_H = 672;
+  const TILE = 32;
+
+  // Game progression
+  let gameTime = 0;
+  let lastLifeLossTime = 0;
+  let bonusSpawnTimer = 0;
+  let twoMinuteReached = false;
+  let lifeRecoveryScore = 3000;
+  let bossSpawnAt200 = false;
+
+  // Spawn timers
+  let virusTimer = 0, powerTimer = 6;
+  let superTimer = 25, turboTimer = 32, bossTimer = 5;
+
+  // Effects
+  let shakeT = 0, shakeMag = 0, redFlashT = 0;
+  const sparks = [];
+
+  // Input
+  const keys = new Set();
+
+  addEventListener('keydown', e => {
+    if (!gameStarted && e.code === 'Enter') {
+      e.preventDefault();
+      startGame();
+      return;
+    }
+    
+    if (!gameStarted) return;
+    
+    if (!audioEnabled) {
+      initAudio();
+    }
+    
+    if(["ArrowLeft","ArrowRight","Space"].includes(e.code)) e.preventDefault();
+    
+    if(e.code === 'KeyP') {
+      e.preventDefault();
+      paused = !paused;
+      
+      if (paused) {
+        pauseBackgroundMusic();
+      } else {
+        resumeBackgroundMusic();
+      }
+      
+      debugLog(`Game ${paused ? 'paused' : 'resumed'}`);
+      return;
+    }
+    
+    if(!running && (e.code === 'KeyR' || e.code === 'Enter')) {
+      e.preventDefault();
+      reset();
+      return;
+    }
+    
+    keys.add(e.code);
+  });
+  
+  addEventListener('keyup', e => keys.delete(e.code));
+
+  // Utilities
+  const clamp = (v,a,b) => Math.max(a,Math.min(b,v));
+  const rand = (a,b) => Math.random()*(b-a)+a;
+
+  // Effects
+  function addShake(mag=4,dur=0.25){ 
+    shakeMag = Math.max(shakeMag,mag); 
+    shakeT = Math.max(shakeT,dur); 
+  }
+  
+  function fxUpdate(dt){ 
+    if(shakeT>0) shakeT = Math.max(0,shakeT-dt); 
+    if(redFlashT>0) redFlashT = Math.max(0,redFlashT-dt); 
+  }
+  
+  function spawnSparks(x,y,n=6){ 
+    for(let i=0;i<n;i++) sparks.push({x,y,vx:rand(-40,40),vy:rand(-80,-20),t:0}); 
+  }
+  
+  function updateSparks(dt){ 
+    for(const s of sparks){ 
+      s.t+=dt; 
+      s.x+=s.vx*dt; 
+      s.y+=s.vy*dt; 
+      s.vy+=180*dt; 
+    } 
+    for(let i=sparks.length-1;i>=0;i--) if(sparks[i].t>0.4) sparks.splice(i,1); 
+  }
+  
+  function drawSparks(){ 
+    ctx.fillStyle='#fff'; 
+    for(const s of sparks) ctx.fillRect(s.x|0, s.y|0, 1, 1); 
+  }
+
+  // Sprite Atlas
+  const atlas = document.createElement('canvas'); 
+  atlas.width = 256; atlas.height = 192; 
+  const ax = atlas.getContext('2d'); 
+  ax.imageSmoothingEnabled = false;
+
+  const TILES = { 
+    PLAYER0:0, BULLET:1, PU_SPEED:2, PU_BURST:3, PU_CLONE:4, MUZZLE:5, PLAYER1:6,
+    VIRUS:16, VIRUS_SUPER:17, VIRUS_TURBO:18, VIRUS_BOSS:19, VIRUS_CRAZY:20, VIRUS_MEGA:21 
+  };
+
+  function tileXY(id){ 
+    return {sx:(id%8)*TILE, sy:Math.floor(id/8)*TILE};
+  }
+
+  let atlasImg = null;
+
+  function drawTileRect(id, dx,dy,dw,dh){ 
+    const {sx,sy} = tileXY(id); 
+    const src = atlasImg || atlas; 
+    try {
+      ctx.drawImage(src, sx,sy,TILE,TILE, dx|0, dy|0, dw|0, dh|0);
+    } catch(e) {
+      debugLog(`Error drawing tile ${id}`);
+      ctx.fillStyle = id < 8 ? '#0f0' : id < 16 ? '#f0f' : '#f00';
+      ctx.fillRect(dx|0, dy|0, dw|0, dh|0);
+    }
+  }
+
+  // Build fallback atlas
+  function buildAtlas(){
+    debugLog("Building fallback atlas...");
+    ax.clearRect(0,0,atlas.width,atlas.height);
+    const R=(x,y,w,h,c)=>{ ax.fillStyle=c; ax.fillRect(x,y,w,h); };
+    const C=(x,y,r,c)=>{ ax.fillStyle=c; ax.beginPath(); ax.arc(x,y,r,0,Math.PI*2); ax.fill(); };
+    
+    // Player
+    function drawPlayer(id, bob) {
+      const {sx,sy}=tileXY(id); 
+      R(sx+6,sy+14+(bob?1:0),20,16,'#1e3c50'); 
+      R(sx+6,sy+12+(bob?1:0),20,16,'#c8f6ff'); 
+      R(sx+10,sy+4+(bob?1:0),12,10,'#ffd2be'); 
+      R(sx+8,sy+2+(bob?1:0),16,6,'#6e3c32'); 
+    }
+    drawPlayer(TILES.PLAYER0, false);
+    drawPlayer(TILES.PLAYER1, true);
+    
+    // Muzzle
+    const {sx:mx,sy:my}=tileXY(TILES.MUZZLE); 
+    R(mx+15,my+6,2,6,'#fff');
+    
+    // Bullet
+    const {sx:bx,sy:by}=tileXY(TILES.BULLET); 
+    R(bx+14,by+8,4,16,'#d2f5ff'); 
+    R(bx+14,by+24,4,4,'#a9d2eb');
+    
+    // Power-ups
+    const powerups = [
+      [TILES.PU_SPEED,'#a0f078','S'],
+      [TILES.PU_BURST,'#ffbe70','B'],
+      [TILES.PU_CLONE,'#8cc0ff','C']
+    ]; 
+    ax.font='bold 16px monospace'; 
+    ax.textAlign='center'; 
+    ax.textBaseline='middle'; 
+    powerups.forEach(([id,c,ch])=>{
+      const {sx,sy}=tileXY(id); 
+      R(sx+4,sy+4,24,24,c); 
+      ax.fillStyle='#000'; 
+      ax.fillText(ch,sx+16,sy+16); 
+    });
+    
+    // Viruses
+    function drawVirus(base, body, rim, frame){ 
+      const {sx,sy}=tileXY(base + (frame?8:0)); 
+      R(sx,sy,32,32,'#0000'); 
+      C(sx+16,sy+16,15,rim); 
+      C(sx+16,sy+15,14,body); 
+      for(let i=0;i<12;i++){ 
+        const a=((i*30)+(frame?8:0))*Math.PI/180; 
+        R(sx+16+Math.cos(a)*18-2, sy+16+Math.sin(a)*18-2, 4,4, rim);
+      } 
+      R(sx+9,sy+12,5,6,'#1a1a1a'); 
+      R(sx+18,sy+12,5,6,'#1a1a1a'); 
+      R(sx+10,sy+22,12,3,'#ff6a3a'); 
+    }
+    
+    drawVirus(TILES.VIRUS,'#78e678','#1e7a28',0); 
+    drawVirus(TILES.VIRUS,'#78e678','#1e7a28',1);
+    drawVirus(TILES.VIRUS_SUPER,'#ffe27a','#6a5a22',0); 
+    drawVirus(TILES.VIRUS_SUPER,'#ffe27a','#6a5a22',1);
+    drawVirus(TILES.VIRUS_TURBO,'#86e7ff','#1b5a66',0); 
+    drawVirus(TILES.VIRUS_TURBO,'#86e7ff','#1b5a66',1);
+    drawVirus(TILES.VIRUS_BOSS,'#b36cff','#4a1a66',0); 
+    drawVirus(TILES.VIRUS_BOSS,'#b36cff','#4a1a66',1);
+    drawVirus(TILES.VIRUS_CRAZY,'#ff9944','#663300',0); 
+    drawVirus(TILES.VIRUS_CRAZY,'#ff9944','#663300',1);
+    drawVirus(TILES.VIRUS_MEGA,'#ff0066','#990033',0); 
+    drawVirus(TILES.VIRUS_MEGA,'#ff0066','#990033',1);
+    
+    debugLog("Fallback atlas built successfully");
+  }
+
+  // Try to load external PNG atlas
+  function loadExternalAtlas() {
+    const extImg = new Image(); 
+    extImg.src = 'dr_cure_atlas_32_2.png';
+    extImg.onload = () => { 
+      atlasImg = extImg; 
+      debugLog(`External atlas loaded: ${extImg.width}x${extImg.height}px`);
+    };
+    extImg.onerror = () => { 
+      atlasImg = null; 
+      debugLog('External atlas not found, using fallback');
+    };
+  }
+
+  // Game Entities
+  class Entity { 
+    constructor(x,y,w,h){ 
+      this.x=x; this.y=y; this.w=w; this.h=h; this.dead=false; 
+    } 
+    get cx(){return this.x+this.w/2;} 
+    get cy(){return this.y+this.h/2;} 
+    intersects(o){ 
+      return !(this.x+this.w<o.x||o.x+o.w<this.x||this.y+this.h<o.y||o.y+o.h<this.y); 
+    } 
+    update(dt){} 
+    draw(ctx){} 
+  }
+
+  class Player extends Entity {
+    constructor(){ 
+      super(VIRTUAL_W/2-16, groundY(), 32, 32); 
+      this.speed=110; 
+      this.shootCooldown=0.264; 
+      this._cd=0; 
+      this.multi=1; 
+      this.muzzleT=0; 
+    }
+    
+    update(dt){ 
+      let dir=0; 
+      if(keys.has('ArrowLeft')) dir-=1; 
+      if(keys.has('ArrowRight')) dir+=1; 
+      this.x += dir*this.speed*dt; 
+      this.x = clamp(this.x,0,VIRTUAL_W-this.w); 
+      
+      // Auto-shooting
+      this._cd-=dt; 
+      if(this._cd<=0){ 
+        this._cd=this.shootCooldown; 
+        shootBullets(this,this.multi); 
+        this.muzzleT=0.06; 
+      } 
+      if(this.muzzleT>0) this.muzzleT-=dt; 
+    }
+    
+    draw(ctx){ 
+      const bob = Math.sin(animT*4)>0 ? TILES.PLAYER0 : TILES.PLAYER1; 
+      drawTileRect(bob, this.x|0, this.y|0, this.w|0, this.h|0); 
+      if(this.muzzleT>0) drawTileRect(TILES.MUZZLE, (this.cx-1)|0, (this.y-6)|0, 2, 6); 
+    }
+  }
+
+  class Bullet extends Entity {
+    constructor(x,y, vx=0, vy=-1, speed=220){ 
+      super(x-2,y-8,4,12); 
+      this.vx=vx; this.vy=vy; this.speed=speed; 
+    }
+    
+    update(dt){ 
+      this.x += this.vx*this.speed*dt; 
+      this.y += this.vy*this.speed*dt; 
+      if(this.y<-12||this.x<-12||this.x>VIRTUAL_W+12) this.dead=true; 
+    }
+    
+    draw(ctx){ 
+      ctx.fillStyle='#d2f5ff';
+      ctx.fillRect(this.x|0, this.y|0, 4, 8);
+      ctx.fillStyle='#a9d2eb';
+      ctx.fillRect(this.x|0, (this.y+8)|0, 4, 4);
+    }
+  }
+
+  class Virus extends Entity {
+    constructor(x, opts={}){
+      const baseSize = 16 + Math.random()*12;
+      const size = (opts.sizeMul||1)*baseSize; 
+      super(x, -size, size, size);
+      this.baseSpeed = 25 + Math.random()*25; 
+      const randMul = (opts.kind||'normal')==='normal' ? (1 + Math.random()) : 1; 
+      this.speed = this.baseSpeed * (opts.speedMul||1) * randMul * 1.3;
+      this.hp = opts.hp || 1; 
+      this.kind = opts.kind || 'normal'; 
+      this.hurtT=0; 
+      this.vx=0; 
+      this.zz=Math.random()*Math.PI*2;
+    }
+    
+    hit(d=1){ 
+      this.hp -= d; 
+      this.hurtT=0.08; 
+      spawnSparks(this.cx,this.cy,5); 
+      
+      playHitSound(this.kind);
+      
+      if(this.hp<=0){ 
+        this.dead=true; 
+        const points = (this.kind==='mega'?500 : this.kind==='boss'?200 : this.kind==='super'?50 : this.kind==='turbo'?30 : this.kind==='crazy'?40 : 10);
+        score += points; 
+        $score.textContent=score; 
+        
+        if (this.kind === 'boss' || this.kind === 'mega') {
+          playYeahSound();
+        }
+        
+        if (score >= lifeRecoveryScore) {
+          recoverLife();
+          lifeRecoveryScore += 3000;
+        }
+      } 
+    }
+    
+    update(dt){ 
+      this.y += this.speed*dt; 
+      this.zz += dt; 
+      this.x += Math.sin(this.zz*1.2)*0.25; 
+      
+      if(this.kind==='crazy'){ 
+        this.vx += rand(-16,16)*dt; 
+        this.vx=clamp(this.vx,-90,90); 
+        let avoid=0; 
+        for(const b of bullets){ 
+          if(b.dead) continue; 
+          const dy=b.y - this.y; 
+          if(dy<-10||dy>80) continue; 
+          if(Math.abs(b.x-this.x)<35) avoid += (this.x<b.x?-1:1); 
+        } 
+        this.vx += avoid*100*dt; 
+        this.x += this.vx*dt; 
+        this.speed *= (1 + rand(-0.2,0.2)*dt); 
+        this.speed=clamp(this.speed,30,160); 
+      }
+      
+      this.x = clamp(this.x, 0, VIRTUAL_W - this.w);
+      
+      if(this.y>VIRTUAL_H-8){ 
+        this.dead=true; 
+        loseLife(); 
+      }
+      if(this.hurtT>0) this.hurtT-=dt; 
+    }
+    
+    draw(ctx){ 
+      const base = this.kind==='mega'?TILES.VIRUS_BOSS : this.kind==='boss'?TILES.VIRUS_BOSS : this.kind==='super'?TILES.VIRUS_SUPER : this.kind==='turbo'?TILES.VIRUS_TURBO : this.kind==='crazy'?TILES.VIRUS_CRAZY : TILES.VIRUS; 
+      const freq = this.kind==='turbo'?9 : this.kind==='boss'?3.5 : this.kind==='mega'?1.5 : 5.5;
+      const frame = Math.sin(animT*freq + this.zz)>0 ? 0 : 1; 
+      const tile = base + (frame?8:0); 
+      drawTileRect(tile, this.x|0, this.y|0, this.w|0, this.h|0); 
+      
+      const maxHp = (this.kind==='mega'?50 : this.kind==='boss'?40 : this.kind==='super'?10 : this.kind==='turbo'?3 : this.kind==='crazy'?4 : 1); 
+      if(maxHp>1){ 
+        ctx.fillStyle='#000'; 
+        ctx.fillRect(this.x, this.y-6, this.w, 4); 
+        ctx.fillStyle= this.kind==='mega' ? '#f00' : '#0f0';
+        const r=Math.max(0,this.hp)/maxHp; 
+        ctx.fillRect(this.x, this.y-6, this.w*r, 4); 
+      } 
+    }
+  }
+
+  class PowerUp extends Entity {
+    constructor(x,kind){ 
+      const centerStart = VIRTUAL_W * 0.25;
+      const centerWidth = VIRTUAL_W * 0.5;
+      const centerX = centerStart + Math.random() * (centerWidth - 16);
+      
+      super(centerX, -10, 16, 16); 
+      this.kind = kind; 
+      this.speed = (20 + Math.random() * 25) * 4;
+    }
+    
+    update(dt){ 
+      this.y+=this.speed*dt; 
+      if(this.y>VIRTUAL_H+12) this.dead=true; 
+      if(this.intersects(player)){ 
+        this.dead=true; 
+        applyBuff(this.kind); 
+      } 
+    }
+    
+    draw(ctx){ 
+      const id = this.kind==='speed'?TILES.PU_SPEED : this.kind==='burst'?TILES.PU_BURST : TILES.PU_CLONE; 
+      drawTileRect(id, this.x|0, this.y|0, 16, 16); 
+    }
+  }
+
+  // Game Logic
+  function groundY() { 
+    return VIRTUAL_H - 8 - 32; 
+  }
+
+  function shootBullets(origin, multi) { 
+    if(multi === 1) { 
+      bullets.push(new Bullet(origin.cx, origin.y)); 
+      return; 
+    } 
+    const deg = 10*Math.PI/180; 
+    [-deg, 0, deg].forEach(a => { 
+      const vx = Math.sin(a), vy = -Math.cos(a); 
+      bullets.push(new Bullet(origin.cx, origin.y, vx, vy, 220)); 
+    }); 
+  }
+
+  const BASE_SPEED = 110, BASE_CD = 0.264;
+  
+  function applyBuff(kind) { 
+    if(kind==='speed'){ 
+      player.speed = BASE_SPEED*2; 
+      setTimeout(() => {player.speed = BASE_SPEED;}, 8000); 
+    } 
+    if(kind==='burst'){ 
+      player.shootCooldown = 0.045; 
+      setTimeout(() => {player.shootCooldown = BASE_CD;}, 8000); 
+    } 
+    if(kind==='clone'){ 
+      player.multi = 3; 
+      setTimeout(() => {player.multi = 1;}, 8000); 
+    } 
+  }
+
+  function duplicateAllViruses() {
+    const currentViruses = [...viruses];
+    debugLog(`Duplicating ${currentViruses.length} viruses after 2 minutes!`);
+    
+    currentViruses.forEach(virus => {
+      if (!virus.dead) {
+        const newX = Math.random() * (VIRTUAL_W - virus.w);
+        const opts = {
+          kind: virus.kind,
+          sizeMul: virus.w / (16 + Math.random()*12),
+          hp: virus.hp,
+          speedMul: virus.speed / (virus.baseSpeed * 1.3)
+        };
+        viruses.push(new Virus(newX, opts));
+      }
+    });
+    
+    addShake(8, 0.5);
+    spawnSparks(VIRTUAL_W/2, VIRTUAL_H/2, 15);
+  }
+
+  function recoverLife() {
+    if (lives < 3) {
+      lives++;
+      $lives.textContent = lives;
+      debugLog(`Life recovered at ${score} points!`);
+      addShake(4, 0.3);
+      spawnSparks(player.cx, player.cy, 10);
+    }
+  }
+
+  function loseLife() {
+    lives--; 
+    $lives.textContent = lives; 
+    lastLifeLossTime = 0;
+    bonusSpawnTimer = 0;
+    safeTime = 0;
+    debugLog(`Life lost! Countdown reset.`);
+    addShake(6, 0.3); 
+    redFlashT = 0.25; 
+    if (lives <= 0) gameOver();
+  }
+
+  function gameOver() { 
+    running = false; 
+    paused = false;
+    stopBackgroundMusic();
+    inputManager.cleanup();
+    debugLog('Game Over - Ranking displayed');
+  }
+
+  function reset() { 
+    bullets.length = 0; 
+    viruses.length = 0; 
+    powerups.length = 0; 
+    score = 0; 
+    lives = 3; 
+    $score.textContent = score; 
+    $lives.textContent = lives; 
+    running = true; 
+    paused = false;
+    
+    gameTime = 0;
+    lastLifeLossTime = 0;
+    bonusSpawnTimer = 0;
+    twoMinuteReached = false;
+    lifeRecoveryScore = 3000;
+    bossSpawnAt200 = false;
+    safeTime = 0;
+    
+    virusTimer = 0;
+    powerTimer = 6;
+    superTimer = 25;
+    turboTimer = 32;
+    bossTimer = 5;
+    
+    player.x = VIRTUAL_W/2-16; 
+    player.y = groundY(); 
+    
+    inputManager.cleanup();
+    
+    setTimeout(() => spawnMegaBoss(), 100);
+    
+    if (!backgroundMusic?.playing && audioEnabled) {
+      startBackgroundMusic();
+    } else {
+      resumeBackgroundMusic();
+    }
+    
+    debugLog('Game restarted');
+  }
+
+  // Spawn functions
+  function getVirusSpawnRate() {
+    if (gameTime < 15) return 0.5;
+    if (bonusSpawnTimer > 0) return 0.4;
+    return 0.8;
+  }
+  
+  function spawnStandard() { 
+    viruses.push(new Virus(Math.random()*(VIRTUAL_W-32), {})); 
+    if (bonusSpawnTimer > 0) {
+      viruses.push(new Virus(Math.random()*(VIRTUAL_W-32), {}));
+    }
+  }
+  
+  function spawnSuper() { 
+    viruses.push(new Virus(Math.random()*(VIRTUAL_W-64), {kind:'super', sizeMul:3, hp:10})); 
+  }
+  
+  function spawnTurbo() { 
+    viruses.push(new Virus(Math.random()*(VIRTUAL_W-32), {kind:'turbo', speedMul:3, hp:3})); 
+  }
+  
+  function spawnBoss() { 
+    viruses.push(new Virus(Math.random()*(VIRTUAL_W-64), {kind:'boss', sizeMul:3, speedMul:0.5, hp:40})); 
+  }
+  
+  function spawnCrazy() { 
+    viruses.push(new Virus(Math.random()*(VIRTUAL_W-48), {kind:'crazy', sizeMul:1.6, hp:4, speedMul:1.2})); 
+  }
+  
+  function spawnMegaBoss() { 
+    viruses.push(new Virus(Math.random()*(VIRTUAL_W-64), {kind:'mega', sizeMul:3, speedMul:0.3, hp:50})); 
+    debugLog('MEGA-BOSS spawned!');
+    addShake(8, 0.5);
+  }
+
+  // Update & Render
+  function update(dt) { 
+    if(!running || paused) return; 
+    
+    animT += dt;
+    gameTime += dt;
+    lastLifeLossTime += dt;
+    
+    player.update(dt);
+    [bullets,viruses,powerups].forEach(arr => arr.forEach(e => e.update(dt)));
+
+    virusTimer -= dt; 
+    if(virusTimer <= 0) { 
+      virusTimer = getVirusSpawnRate(); 
+      spawnStandard(); 
+    }
+    
+    powerTimer -= dt; 
+    if(powerTimer <= 0) { 
+      powerTimer = 8 + Math.random()*6; 
+      const kinds = ['speed','burst','clone']; 
+      powerups.push(new PowerUp(0, kinds[(Math.random()*3)|0])); 
+    }
+    
+    superTimer -= dt; 
+    if(superTimer <= 0) { 
+      superTimer = 25; 
+      spawnSuper(); 
+    }
+    
+    turboTimer -= dt; 
+    if(turboTimer <= 0) { 
+      turboTimer = 32; 
+      spawnTurbo(); 
+    }
+    
+    bossTimer -= dt; 
+    if(bossTimer <= 0) { 
+      bossTimer = 135;
+      spawnBoss(); 
+    }
+
+    if (lastLifeLossTime >= 55 && bonusSpawnTimer <= 0) {
+      bonusSpawnTimer = 5;
+      debugLog('BONUS SPAWN PHASE!');
+      addShake(6, 0.4);
+    }
+    
+    if (bonusSpawnTimer > 0) {
+      bonusSpawnTimer -= dt;
+      if (bonusSpawnTimer <= 0) {
+        debugLog('Bonus phase ended');
+      }
+    }
+
+    if (gameTime >= 120 && !twoMinuteReached) {
+      twoMinuteReached = true;
+      duplicateAllViruses();
+    }
+
+    if (gameTime >= 200 && !bossSpawnAt200) {
+      bossSpawnAt200 = true;
+      spawnBoss();
+      spawnBoss();
+      debugLog('200 seconds: 2 boss enemies!');
+      addShake(10, 0.6);
+    }
+
+    safeTime += dt; 
+    if(safeTime >= 60) { 
+      spawnCrazy(); 
+      safeTime = 0; 
+    }
+
+    bullets.forEach(b => { 
+      viruses.forEach(v => { 
+        if(!b.dead && !v.dead && b.intersects(v)) { 
+          b.dead = true; 
+          v.hit(1); 
+        } 
+      }); 
+    });
+    
+    [bullets,viruses,powerups].forEach(arr => { 
+      for(let i=arr.length-1; i>=0; i--) {
+        if(arr[i].dead) arr.splice(i,1); 
+      }
+    });
+    
+    updateSparks(dt); 
+    fxUpdate(dt);
+  }
+
+  function render() {
+    if(shakeT > 0) { 
+      const mag = shakeMag*(shakeT/0.3); 
+      ctx.setTransform(1,0,0,1,(Math.random()*2-1)*mag,(Math.random()*2-1)*mag); 
+    } else {
+      ctx.setTransform(1,0,0,1,0,0);
+    }
+    
+    ctx.fillStyle = '#f0fff0'; 
+    ctx.fillRect(0,0,VIRTUAL_W,VIRTUAL_H);
+    ctx.strokeStyle = '#4caf50'; 
+    ctx.beginPath(); 
+    ctx.moveTo(0,VIRTUAL_H-8); 
+    ctx.lineTo(VIRTUAL_W,VIRTUAL_H-8); 
+    ctx.stroke();
+    
+    if(running) {
+      player.draw(ctx);
+      [bullets,viruses,powerups].forEach(arr => arr.forEach(e => e.draw(ctx)));
+      drawSparks();
+      
+      if(redFlashT > 0) { 
+        ctx.fillStyle = 'rgba(255,100,100,'+(redFlashT/0.25*0.25).toFixed(3)+')'; 
+        ctx.fillRect(0,0,VIRTUAL_W,VIRTUAL_H); 
+      }
+    } else {
+      // GAME OVER SCREEN with Ranking
+      ctx.setTransform(1,0,0,1,0,0); 
+      ctx.fillStyle = 'rgba(0,0,0,0.85)'; 
+      ctx.fillRect(0,0,VIRTUAL_W,VIRTUAL_H); 
+      
+      // Game Over Header
+      ctx.fillStyle = '#ff4757'; 
+      ctx.font = 'bold 26px Orbitron, monospace';
+      ctx.textAlign = 'center'; 
+      ctx.shadowColor = '#ff4757';
+      ctx.shadowBlur = 15;
+      ctx.fillText('RESEARCH HARDER !', VIRTUAL_W/2, 50); 
+      
+      // High Score Ranking
+      const highScores = [
+        { rank: 1, name: "Huntrix", score: 9843, emoji: "🥇" },
+        { rank: 2, name: "MadVirologist", score: 9022, emoji: "🥈" },
+        { rank: 3, name: "Prof. Antidote", score: 8550, emoji: "🥉" },
+        { rank: 4, name: "GermSn1per", score: 8200, emoji: "" },
+        { rank: 5, name: "DNAblaster", score: 7654, emoji: "" },
+        { rank: 6, name: "LaboRambo", score: 7101, emoji: "" },
+        { rank: 7, name: "wanoptikum", score: 6778, emoji: "" },
+        { rank: 8, name: "Cytokiller", score: 6033, emoji: "" },
+        { rank: 9, name: "TestTubeRogue", score: 4989, emoji: "" },
+        { rank: 10, name: "PetriDishKing", score: 4532, emoji: "" },
+        { rank: 11, name: "MicrobeHunter", score: 4201, emoji: "" },
+        { rank: 12, name: "BiohazardBane", score: 3987, emoji: "" },
+        { rank: 13, name: "Dr.Immunizer", score: 3654, emoji: "" },
+        { rank: 14, name: "PathogenSlayer", score: 3432, emoji: "" },
+        { rank: 15, name: "NanoNinja", score: 3201, emoji: "" },
+     //   { rank: 16, name: "ChromosomeChamp", score: 2987, emoji: "" },
+     //   { rank: 17, name: "CellStormTrooper", score: 2654, emoji: "" },
+     //   { rank: 18, name: "VaccineVanguard", score: 2432, emoji: "" },
+     //  { rank: 19, name: "ProteinPunisher", score: 2201, emoji: "" },
+     //  { rank: 20, name: "LabCoatLegend", score: 1987, emoji: "" }
+      ];
+      
+      // Insert DR. Cure with current score
+      let playerRank = highScores.length + 1;
+      for (let i = 0; i < highScores.length; i++) {
+        if (score > highScores[i].score) {
+          playerRank = i + 1;
+          break;
+        }
+      }
+      
+      // Create final ranking with DR. Cure inserted
+      const finalRanking = [...highScores];
+      if (playerRank <= 20) {
+        finalRanking.splice(playerRank - 1, 0, { 
+          rank: playerRank, 
+          name: "DR. Cure", 
+          score: score, 
+          emoji: playerRank === 1 ? "🥇" : playerRank === 2 ? "🥈" : playerRank === 3 ? "🥉" : "",
+          isPlayer: true 
+        });
+        // Update ranks for displaced entries
+        for (let i = playerRank; i < finalRanking.length; i++) {
+          if (!finalRanking[i].isPlayer) {
+            finalRanking[i].rank = i + 1;
+          }
+        }
+        finalRanking.splice(20); // Keep only top 20
+      }
+      
+      // Draw "TOP SCIENTISTS" header
+      ctx.fillStyle = '#00d4ff';
+      ctx.font = 'bold 20px Orbitron, monospace';
+      ctx.shadowColor = '#00d4ff';
+      ctx.shadowBlur = 10;
+      ctx.fillText('TOP SCIENTISTS', VIRTUAL_W/2, 100);
+      
+      // Draw ranking
+      ctx.font = '14px Orbitron, monospace';
+      ctx.textAlign = 'left';
+      ctx.shadowBlur = 5;
+      
+      finalRanking.forEach((entry, index) => {
+        const y = 130 + (index * 25);
+        
+        if (entry.isPlayer) {
+          // Highlight player entry
+          ctx.fillStyle = 'rgba(0, 255, 128, 0.3)';
+          ctx.fillRect(20, y - 15, VIRTUAL_W - 40, 20);
+          ctx.fillStyle = '#00ff80';
+          ctx.shadowColor = '#00ff80';
+        } else {
+          ctx.fillStyle = '#ffffff';
+          ctx.shadowColor = '#ffffff';
+        }
+        
+        const rankText = `${entry.emoji} ${entry.rank}`;
+        const nameText = entry.name;
+        const scoreText = entry.score.toLocaleString();
+        
+        ctx.fillText(rankText, 30, y);
+        ctx.fillText(nameText, 80, y);
+        ctx.textAlign = 'right';
+        ctx.fillText(scoreText, VIRTUAL_W - 30, y);
+        ctx.textAlign = 'left';
+      });
+      
+      // Final score display
+      ctx.fillStyle = '#ffcc00';
+      ctx.font = 'bold 16px Orbitron, monospace';
+      ctx.textAlign = 'center';
+      ctx.shadowColor = '#ffcc00';
+      ctx.shadowBlur = 8;
+      ctx.fillText(`YOUR SCORE: ${score.toLocaleString()}`, VIRTUAL_W/2, VIRTUAL_H - 60);
+      
+      // Restart instruction
+      ctx.fillStyle = '#00d4ff';
+      ctx.font = '14px Orbitron, monospace';
+      ctx.shadowColor = '#00d4ff';
+      ctx.shadowBlur = 6;
+      ctx.fillText('Press Enter to Start New Batch', VIRTUAL_W/2, VIRTUAL_H - 30); 
+      ctx.shadowBlur = 0;
+    }
+    
+    if(paused && running) {
+      ctx.setTransform(1,0,0,1,0,0);
+      ctx.fillStyle = 'rgba(240,255,240,0.9)'; 
+      ctx.fillRect(0,0,VIRTUAL_W,VIRTUAL_H); 
+      
+      ctx.fillStyle = '#006432'; 
+      ctx.font = 'bold 28px Orbitron, monospace';
+      ctx.textAlign = 'center'; 
+      ctx.shadowColor = '#00c864';
+      ctx.shadowBlur = 10;
+      ctx.fillText('BIOHAZARD PAUSED', VIRTUAL_W/2, VIRTUAL_H/2-10); 
+      
+      ctx.font = '16px Orbitron, monospace';
+      ctx.shadowBlur = 6;
+      ctx.fillText('Press P to Resume Protocol', VIRTUAL_W/2, VIRTUAL_H/2+25); 
+      ctx.shadowBlur = 0;
+    }
+  }
+
+  // Game Loop
+  let last = performance.now();
+  
+  function loop(now) { 
+    // Wait for canvas and context to be initialized
+    if (!canvas || !ctx) {
+      requestAnimationFrame(loop);
+      return;
+    }
+    
+    if (!gameStarted) {
+      requestAnimationFrame(loop);
+      return;
+    }
+    
+    const dt = Math.min(0.033, (now-last)/1000); 
+    last = now; 
+    update(dt); 
+    render(); 
+    requestAnimationFrame(loop); 
+  }
+
+  function fitToWindow() {
+    if (!canvas) return;
+    canvas.width = VIRTUAL_W; 
+    canvas.height = VIRTUAL_H;
+    
+    if (player) player.y = groundY();
+  }
+
+  // Game Initialization
+  function initializeGame() {
+    canvas = document.getElementById('game');
+    ctx = canvas.getContext('2d');
+    ctx.imageSmoothingEnabled = false;
+
+    $score = document.getElementById('score');
+    $lives = document.getElementById('lives');
+
+    player = new Player();
+    
+    // Build atlas and try to load external
+    buildAtlas();
+    loadExternalAtlas();
+    
+    // Set up window resize
+    window.addEventListener('resize', fitToWindow);
+    fitToWindow();
+    
+    // Initialize audio on first touch for mobile
+    if (isTouchDevice && !audioEnabled) {
+      document.addEventListener('pointerdown', function audioInit() {
+        if (!audioEnabled) {
+          initAudio();
+          document.removeEventListener('pointerdown', audioInit);
+        }
+      }, { once: true });
+    }
+    
+    debugLog(`Game initialized - Auto-shooting enabled`);
+    debugLog(`Touch support: ${isTouchDevice ? 'enabled' : 'keyboard only'}`);
+  }
+
+  // Start the game loop immediately, but game logic waits for gameStarted
+  requestAnimationFrame(loop);
+  
+  // Initialize game components when page loads
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      // InputManager initialization is already done in its constructor
+    });
+  }
+})();
+</script>
+</body>
+</html>
